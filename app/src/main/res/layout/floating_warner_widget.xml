@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layout"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/background_border"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="vertical"
+    android:visibility="visible">
+
+
+    <fr.byped.bwarearea.FloatingWidget
+        android:id="@+id/widgetContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="4dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ProgressBar
+                android:id="@+id/startProgress"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="@android:dimen/notification_large_icon_width"
+                android:layout_height="@android:dimen/notification_large_icon_height"
+                android:max="100"
+                android:progress="0"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/maxSpeed"
+                android:layout_width="@android:dimen/notification_large_icon_width"
+                android:layout_height="@android:dimen/notification_large_icon_height"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:background="@drawable/button_states"
+                android:gravity="center_vertical|center_horizontal|center"
+                android:text="90"
+                android:textColor="?android:attr/colorForeground"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/poiType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentStart="true"
+                android:text="Type"
+                android:textColor="?android:attr/colorForeground"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/distance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="300m"
+                android:textColor="?android:attr/colorForeground"
+                android:textSize="26dp" />
+        </LinearLayout>
+    </fr.byped.bwarearea.FloatingWidget>
+
+</RelativeLayout>

@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">BwareArea</string>
+    <string name="point_of_interest_database">Point of interest database</string>
+    <string name="set_file_to_use">Set file to import</string>
+    <string name="start_service">Start service</string>
+    <string name="stop_service">Stop service</string>
+    <string name="unknown">Unknown</string>
+    <string name="fire_cam">Red light</string>
+    <string name="static_cam">Static</string>
+    <string name="range_start">Start range</string>
+    <string name="range_stop">End range</string>
+    <string name="type_2">Type 2</string>
+    <string name="type_3">Type 3</string>
+    <string name="select_file">Select file to import</string>
+    <string name="started_service">Started service</string>
+    <string name="base_distance">Warn at %dm from POI</string>
+    <string name="import_completed">Import completed.</string>
+    <string name="import_starting">Import starting...</string>
+    <string name="import_x_poi">Imported %d POI</string>
+</resources>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="100%"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintWidth_percent="100%">
+
+        <TextView
+            android:id="@+id/POIDBLabel"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/defaultLineHeight"
+            android:text="@string/point_of_interest_database"
+            android:textSize="18sp" />
+
+        <ProgressBar
+            android:id="@+id/importProgress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/defaultLineHeight"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/POIDBLoad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/set_file_to_use" />
+
+        <TextView
+            android:id="@+id/distanceLabel"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/defaultLineHeight"
+            android:text="Distance to warn before"
+            android:textSize="18sp" />
+
+        <SeekBar
+            android:id="@+id/distance"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/defaultLineHeight" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/defaultLineHeight" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/defaultLineHeight" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/startStop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="@string/start_service" />
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

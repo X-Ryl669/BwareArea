@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BwareArea</string>
+    <string name="point_of_interest_database">Base de donnée de points d\'intérêts</string>
+    <string name="set_file_to_use">Fichier à importer</string>
+    <string name="start_service">Démarrer le service</string>
+    <string name="stop_service">Arrêter le service</string>
+    <string name="unknown">Inconnu</string>
+    <string name="range_start">Début de tronçon</string>
+    <string name="range_stop">Fin de tronçon</string>
+    <string name="fire_cam">Feu rouge</string>
+    <string name="static_cam">Fixe</string>
+    <string name="type_2">Type 2</string>
+    <string name="type_3">Type 3</string>
+    <string name="select_file">Selectionner le fichier à importer</string>
+    <string name="started_service">Service démarré</string>
+    <string name="base_distance">Alerter dès %dm du point</string>
+    <string name="import_completed">Import completed.</string>
+    <string name="import_starting">Import starting...</string>
+    <string name="import_x_poi">Imported %d POI</string>
+</resources>
