@@ -60,14 +60,18 @@ public class POICollection
         {
             while (!tmpRecords.isAfterLast() && perStep > 0)
             {
-                POIInfo poi = new POIInfo(tmpRecords.getDouble(0), tmpRecords.getDouble(1), tmpRecords.getInt(2), tmpRecords.getInt(3), tmpRecords.getInt(4), tmpRecords.getString(5));
+                POIInfo poi = new POIInfo(tmpRecords.getDouble(0), tmpRecords.getDouble(1), tmpRecords.getInt(2), tmpRecords.getInt(3), tmpRecords.getInt(4), tmpRecords.getString(5), tmpRecords.getInt(6));
                 vpTree.add(poi);
                 tmpRecords.moveToNext();
                 perStep--;
             }
-            if (perStep != 0) tmpRecords.close();
         }
     }
+    public void finishVPTreeIterativeBuild()
+    {
+        tmpRecords.close();
+    }
+
 
     public long endChanges(boolean succeeded)
     {
@@ -91,12 +95,12 @@ public class POICollection
         values.put("type", poi.type);
         values.put("speed", poi.speedKmh);
         values.put("dir", poi.directionDegree);
-        values.put("desc", poi.description != null ? poi.description : "");
+        values.put("description", poi.description != null ? poi.description : "");
         return database.insert(POI_TABLE, null, values);
     }
 
     public Cursor selectRecords() {
-        String[] cols = new String[]{ "lon", "lat", "type", "speed", "dir", "desc"};
+        String[] cols = new String[]{ "lon", "lat", "type", "speed", "dir", "description", "id"};
         Cursor mCursor = database.query(false, POI_TABLE, cols, null
                 , null, null, null, null, null);
         if (mCursor != null)
@@ -109,7 +113,7 @@ public class POICollection
     public POIInfo getClosestPoint(Coordinate c)
     {
         List<POIInfo> list = vpTree.getNearestNeighbors(c, 1);
-        if (list.isEmpty()) return null;
+        if (list == null || list.isEmpty()) return null;
         return list.get(0);
     }
 

@@ -15,7 +15,17 @@
     <string name="select_file">Selectionner le fichier à importer</string>
     <string name="started_service">Service démarré</string>
     <string name="base_distance">Alerter dès %dm du point</string>
-    <string name="import_completed">Import completed.</string>
-    <string name="import_starting">Import starting...</string>
-    <string name="import_x_poi">Imported %d POI</string>
+    <string name="import_completed">Import terminé.</string>
+    <string name="import_starting">Import commencé...</string>
+    <string name="import_x_poi">Importé %d PI</string>
+    <string name="cant_get_location_manager">Impossible d\'obtenir un service de localisation. Veuillez l\'activer.</string>
+    <string name="indexing">Indexation</string>
+    <string name="done">Fini</string>
+    <string name="point_of_interest_database_with_poi">Point d\'intérêt actuellement dans la base: %d</string>
+    <string name="limit_to_range_only">Si vous êtes en France métropolitaine</string>
+    <string name="bluetooth_trigger">Démarrer quand le dispositif Bluetooth est connecté</string>
+    <string name="need_bluetooth_connected">Vous devez être connecté au dispositif Bluetooth lorsque vous activez cette fonctionnalité pour connaître quel dispositif utiliser</string>
+    <string name="bluetooth_device_label">Démarrage automatique lorsque %s est présent</string>
+    <string name="alert_overspeed">Alerte sur dépassement de vitesse</string>
+    <string name="base_overspeed">Alerter dès %dkm/h au-dessus</string>
 </resources>

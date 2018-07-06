@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/selected" android:oneshot="false">
+    <item android:drawable="@drawable/speed_background_normal" android:duration="1000" />
+    <item android:drawable="@drawable/speed_background_overspeed" android:duration="1000" />
+</animation-list>

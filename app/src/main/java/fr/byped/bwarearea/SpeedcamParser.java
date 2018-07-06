@@ -7,6 +7,7 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -23,12 +24,12 @@ public class SpeedcamParser
         this.collection = collection;
     }
 
-    /** Split the parsing of the given file in 3 steps, first extract and validate the lines from the file */
-    public static String[] getLinesFromSpeedcamFile(Context context, String filePath)
+    public static String[] getLinesFromStream(Context context, InputStream stream)
     {
         try {
 
-            String fileContent = getStringFromFile(filePath);
+            String fileContent = convertStreamToString(stream);
+            stream.close();
             // Split the first line of the file
             String lines[] = fileContent.split("\n");
             if (lines.length < 2) throw new Exception("This file does not contain enough lines");
@@ -41,6 +42,18 @@ public class SpeedcamParser
         {
             Log.e("SpeedcamParser", "Got exception: " + e.getMessage() + " with stack: " + e.getStackTrace());
             Toast.makeText(context, e.getMessage(), Toast.LENGTH_LONG).show();
+            return null;
+        }
+    }
+
+    /** Split the parsing of the given file in 3 steps, first extract and validate the lines from the file */
+    public static String[] getLinesFromSpeedcamFile(Context context, String filePath)
+    {
+        try {
+            FileInputStream fin = new FileInputStream(new File(filePath));
+            return getLinesFromStream(context, fin);
+        } catch(FileNotFoundException e)
+        {
             return null;
         }
     }

@@ -1,23 +1,44 @@
 package fr.byped.bwarearea;
 
 import android.content.Context;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import java.io.IOException;
 
 public class FloatingWidget extends FrameLayout
 {
     TextView speed;
     TextView type;
     TextView distance;
+    TextView currentSpeed;
+    ImageView dontWorry;
+    AnimationDrawable overspeedAnim;
+    Drawable  defaultBackground;
     ProgressBar startProgress;
+    MediaPlayer player;
+    boolean  onlyRange;
+    int      warnDistance;
+    int      alertOverspeed;
+    boolean  silentAlert;
 
-    Coordinate lastPOI;
+    double   distanceAvg;
+    double   lastDistanceAvg;
+
+
+    POIInfo lastPOI;
     OnTouchListener touchListener;
 
 
@@ -27,9 +48,25 @@ public class FloatingWidget extends FrameLayout
         type = view.findViewById(R.id.poiType);
         distance = view.findViewById(R.id.distance);
         startProgress = view.findViewById(R.id.startProgress);
+        dontWorry = view.findViewById(R.id.allOk);
+        currentSpeed = view.findViewById(R.id.currentSpeed);
+        overspeedAnim = (AnimationDrawable)ContextCompat.getDrawable(view.getContext(), R.drawable.speed_background_animation);
+        defaultBackground = ContextCompat.getDrawable(view.getContext(), R.drawable.speed_background_normal);
+        player = MediaPlayer.create(view.getContext(), R.raw.coin_fall_cc0);
+/*        player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            public void onPrepared(MediaPlayer mp) {
+                player.start();
+            }
+        });*/
         touchListener = null;
     }
 
+    public void setRangeAndAlertAndWarnDistance(boolean onlyRange, int warnDistance, int alertOverspeed)
+    {
+        this.onlyRange = onlyRange;
+        this.warnDistance = warnDistance;
+        this.alertOverspeed = alertOverspeed;
+    }
 
     public FloatingWidget(@NonNull Context context) {
         super(context);
@@ -52,11 +89,83 @@ public class FloatingWidget extends FrameLayout
         return getContext().getString(POIInfo.typesToID[0]);
     }
 
-    public void setClosestPOI(POIInfo poi)
+    private void dontWarn(float speedInMperS)
     {
-        speed.setText(poi.speedKmh);
+        distance.setVisibility(View.GONE);
+        type.setVisibility(View.GONE);
+        speed.setVisibility(View.GONE);
+        dontWorry.setVisibility(View.VISIBLE);
+    }
+
+    private void warn(double dist, float speedInMperS)
+    {
+        if (onlyRange) distance.setText("---");
+        else distance.setText(String.format("%dm", Math.round(dist)));
+        distance.setVisibility(View.VISIBLE);
+        type.setVisibility(View.VISIBLE);
+        speed.setVisibility(View.VISIBLE);
+        dontWorry.setVisibility(View.GONE);
+
+        if (alertOverspeed > 0 && Math.round(speedInMperS / 3.6) > lastPOI.speedKmh + alertOverspeed && !silentAlert)
+        {   // Alert should be raised, only if not silented
+            speed.setBackground(overspeedAnim);
+            if (!overspeedAnim.isRunning()) {
+                overspeedAnim.start();
+                player.start();
+            }
+        }
+        else
+        {
+            speed.setBackground(defaultBackground);
+            overspeedAnim.stop();
+            player.stop();
+            try {
+                player.prepare();
+            } catch(IOException e)
+            {
+                Log.e("Bware", "Error while preparing the player " + e.getMessage());
+            }
+        }
+    }
+
+    public void setClosestPOI(POIInfo poi, Coordinate current, float speedInMperS)
+    {
+        if (poi == null) return;
+
+        double dist = poi.distanceTo(current);
+        // Should we make the next alert silent ?
+        // We don't if it's a new POI
+        if (lastPOI == null || lastPOI.id != poi.id) {
+            silentAlert = false;
+            // Reset when changing POI
+            distanceAvg = dist;
+            lastDistanceAvg = dist;
+            lastPOI = poi;
+        }
+
+        // We do however if we are leaving the POI
+        // Leaving is defined as the windowed distance average increasing
+        double alpha = 0.2;
+        distanceAvg = distanceAvg * alpha + (1 - alpha) * dist;
+        // Get the minimum distance now
+        if (lastDistanceAvg > distanceAvg) lastDistanceAvg = distanceAvg;
+        // Check if we need to silent an alert (we have a 10% margin)
+        if (distanceAvg > lastDistanceAvg * 1.1)
+            silentAlert = true;
+
+
+        // Remember the value
+        if (poi.speedKmh != 0)
+            speed.setText(String.format("%d", poi.speedKmh));
+        else
+            speed.setText("???");
         type.setText(getPOITypeAsString(poi.type));
-        lastPOI = poi;
+        currentSpeed.setText(String.format("%dkm/h", Math.round(speedInMperS / 3.6)));
+
+        if (dist > warnDistance)
+            dontWarn(speedInMperS);
+        else
+            warn(dist, speedInMperS);
     }
 
     private int poiCount;
@@ -67,22 +176,23 @@ public class FloatingWidget extends FrameLayout
         startProgress.setProgress(0);
         speed.setVisibility(View.GONE);
         startProgress.setVisibility(View.VISIBLE);
-        type.setText("Creating DB");
-        type.setTextSize(type.getTextSize() * 0.5f);
+        type.setText(R.string.indexing);
+
     }
 
     public void doneImporting()
     {
         startProgress.setVisibility(View.GONE);
         speed.setVisibility(View.VISIBLE);
-        type.setText("Done");
-        type.setTextSize(type.getTextSize() / 0.5f);
+        type.setText(R.string.done);
+        distance.setText("");
+
     }
 
     public void updateImport(int value)
     {
         startProgress.setProgress(value);
-        type.setText(String.format("Indexing %d%%", value * 100 / poiCount));
+        distance.setText(String.format("%d%%", value * 100 / poiCount));
     }
 
     @Override

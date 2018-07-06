@@ -17,4 +17,14 @@
     <string name="import_completed">Import completed.</string>
     <string name="import_starting">Import starting...</string>
     <string name="import_x_poi">Imported %d POI</string>
+    <string name="cant_get_location_manager">Could not get precise location. Please fix!</string>
+    <string name="indexing">Indexing</string>
+    <string name="done">Done</string>
+    <string name="point_of_interest_database_with_poi">Point of interest currently in database : %d</string>
+    <string name="limit_to_range_only">Only limit to range checking</string>
+    <string name="bluetooth_trigger">Start when detecting bluetooth device</string>
+    <string name="need_bluetooth_connected">Please connect to your bluetooth device before toggling this switch in order to remember what device to use</string>
+    <string name="bluetooth_device_label">Starting when detecting connection with %s</string>
+    <string name="alert_overspeed">Alert upon overspeed</string>
+    <string name="base_overspeed">Alert when %dkm/h above POI\'s speed</string>
 </resources>

@@ -6,11 +6,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.AsyncTask;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.constraint.solver.widgets.WidgetContainer;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
@@ -21,13 +28,14 @@ import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-public class FloatingWarnerService extends Service {
+public class FloatingWarnerService extends Service implements LocationListener {
     private WindowManager mWindowManager;
     private View mOverlayView;
     private FloatingWidget widgetContainer;
     private POICollection collection;
     private SharedPreferences pref;
     private Binder binder;
+    private LocationManager locationManager;
     private int poiCount;
 
 
@@ -74,6 +82,7 @@ public class FloatingWarnerService extends Service {
 
         widgetContainer = (FloatingWidget)mOverlayView.findViewById(R.id.widgetContainer);
         widgetContainer.bindAll(mOverlayView);
+        widgetContainer.setRangeAndAlertAndWarnDistance(pref.getBoolean("onlyRange", false), pref.getInt("distance", 300), pref.getInt("overspeed", 5));
         widgetContainer.setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
             private int initialY;
@@ -90,7 +99,7 @@ public class FloatingWarnerService extends Service {
                     startActivity(intent);
 
                     //close the service and remove the fab view
-                    stopSelf();
+                    stopCleanly();
                     return true;
                 }
             }
@@ -144,11 +153,18 @@ public class FloatingWarnerService extends Service {
         });
 
         // We need to create the VP Tree from all the POI so let's do it now
+//        if(android.os.Debug.isDebuggerConnected()) poiCount = 100;
         new StartService(widgetContainer, collection).execute(poiCount);
+
+        Intent intent = new Intent("finish_activity");
+        // You can also include some extra data.
+        intent.putExtra("message", "From service!");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     @Override
     public void onDestroy() {
+        stopLocation();
         super.onDestroy();
         if (mOverlayView != null)
             mWindowManager.removeView(mOverlayView);
@@ -156,6 +172,90 @@ public class FloatingWarnerService extends Service {
 
 
     public FloatingWarnerService() {
+    }
+
+    private void stopLocation() {
+        if (locationManager != null) {
+            locationManager.removeUpdates(this);
+            locationManager = null;
+        }
+
+    }
+
+    private void stopCleanly() {
+        stopLocation();
+        stopSelf();
+    }
+
+    /** Location stuff below */
+    private void doneImporting()
+    {
+        locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        if (locationManager == null || locationManager.getAllProviders().isEmpty())
+        {
+            Toast.makeText(this, R.string.cant_get_location_manager, Toast.LENGTH_LONG).show();
+            stopCleanly();
+            return;
+        }
+        try {
+//            String gpsProvider = locationManager.getProvider(locationManager.GPS_PROVIDER);
+//            for (String provider : locationManager.getAllProviders()) {
+                Log.i("Bware", "provider " + locationManager.GPS_PROVIDER);
+                // search updated location
+               // onLocationChanged(locationManager.getLastKnownLocation(locationManager.GPS_PROVIDER));
+               // locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 2000, 50, this);
+                locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 0, 0, this);
+                locationManager.requestLocationUpdates(locationManager.NETWORK_PROVIDER, 0, 0, this);
+  //          }
+        } catch(SecurityException e)
+        {
+            Log.e("Bware", "Security exception while registering GPS precision location: " + e.getMessage());
+            Toast.makeText(this, R.string.cant_get_location_manager, Toast.LENGTH_LONG).show();
+            stopCleanly();
+        }
+    }
+
+    public class BaseCoord implements Coordinate
+    {
+        Location loc;
+        BaseCoord(Location loc) { this.loc = loc; }
+
+        @Override
+        public double getLatitude() {
+            return loc.getLatitude();
+        }
+
+        @Override
+        public double getLongitude() {
+            return loc.getLongitude();
+        }
+
+        public float speed() { return loc.getSpeed(); }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if (location == null) return;
+        BaseCoord loc = new BaseCoord(location);
+        POIInfo poi = collection.getClosestPoint(loc);
+        widgetContainer.setClosestPOI(poi, loc, loc.speed());
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+        Log.v("Bware", "Provider status changed: " + s + "(" + i + ")");
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+        Log.v("Bware", "Provider enabled: " + s);
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+        Log.v("Bware", "Provider disabled: " + s);
     }
 
     public class Binder extends android.os.Binder {
@@ -186,7 +286,9 @@ public class FloatingWarnerService extends Service {
         }
         @Override
         protected void onPostExecute(String result) {
+            collection.finishVPTreeIterativeBuild();
             widget.doneImporting();
+            FloatingWarnerService.this.doneImporting();
 
         }
         @Override

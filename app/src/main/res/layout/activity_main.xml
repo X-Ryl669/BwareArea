@@ -12,15 +12,15 @@
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="100%"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintWidth_percent="100%">
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/POIDBLabel"
             android:layout_width="match_parent"
             android:layout_height="@dimen/defaultLineHeight"
             android:text="@string/point_of_interest_database"
+            android:textColor="?android:attr/colorForeground"
             android:textSize="18sp" />
 
         <ProgressBar
@@ -34,19 +34,52 @@
             android:id="@+id/POIDBLoad"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/set_file_to_use" />
+            android:text="@string/set_file_to_use"
+            android:textColor="?android:attr/colorForeground" />
 
         <TextView
             android:id="@+id/distanceLabel"
             android:layout_width="match_parent"
             android:layout_height="@dimen/defaultLineHeight"
             android:text="Distance to warn before"
+            android:textColor="?android:attr/colorForeground"
             android:textSize="18sp" />
 
         <SeekBar
             android:id="@+id/distance"
             android:layout_width="match_parent"
             android:layout_height="@dimen/defaultLineHeight" />
+
+        <TextView
+            android:id="@+id/alertOverspeed"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/defaultLineHeight"
+            android:text="@string/alert_overspeed"
+            android:textColor="?android:attr/colorForeground"
+            android:textSize="18sp" />
+
+        <SeekBar
+            android:id="@+id/overspeed"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/defaultLineHeight"
+            android:max="50"
+            android:progress="5" />
+
+        <Switch
+            android:id="@+id/limitRange"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/defaultLineHeight"
+            android:text="@string/limit_to_range_only"
+            android:textColor="?android:attr/colorForeground"
+            android:textSize="18sp" />
+
+        <Switch
+            android:id="@+id/bluetoothStart"
+            android:layout_width="match_parent"
+            android:layout_height="50sp"
+            android:text="@string/bluetooth_trigger"
+            android:textColor="?android:attr/colorForeground"
+            android:textSize="18sp" />
 
         <Space
             android:layout_width="match_parent"

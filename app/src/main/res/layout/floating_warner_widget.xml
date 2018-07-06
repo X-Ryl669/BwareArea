@@ -20,7 +20,15 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
             android:orientation="vertical">
+
+            <android.support.v7.widget.AppCompatImageView
+                android:id="@+id/allOk"
+                android:layout_width="@android:dimen/notification_large_icon_width"
+                android:layout_height="@android:dimen/notification_large_icon_height"
+                android:visibility="gone"
+                app:srcCompat="@drawable/ic_thumbup" />
 
             <ProgressBar
                 android:id="@+id/startProgress"
@@ -49,6 +57,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentStart="true"
+                android:gravity="center"
                 android:text="Type"
                 android:textColor="?android:attr/colorForeground"
                 android:textSize="18sp" />
@@ -59,8 +68,16 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
                 android:text="300m"
+                android:textAlignment="center"
                 android:textColor="?android:attr/colorForeground"
-                android:textSize="26dp" />
+                android:textSize="26sp" />
+
+            <TextView
+                android:id="@+id/currentSpeed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="0 km/h" />
         </LinearLayout>
     </fr.byped.bwarearea.FloatingWidget>
 

@@ -7,6 +7,8 @@ public class POIInfo implements Coordinate
 {
     private double longitude;
     private double latitude;
+    /** The point of interest unique identifier */
+    public int id;
     /** The point of interest type */
     public int type;
     /** The point of interest speed */
@@ -27,12 +29,27 @@ public class POIInfo implements Coordinate
         directionDegree = dir;
     }
 
+    public POIInfo(double longitude, double latitude, int type, int speed, int dir, int id)
+    {
+        this.setLongitude(longitude); this.setLatitude(latitude);
+        this.type = type;
+        this.id = id;
+        speedKmh = speed;
+        directionDegree = dir;
+    }
+
+
     public POIInfo(double longitude, double latitude, int type, int speed, int dir, String description)
     {
         this(longitude, latitude, type, speed, dir);
         this.description = description;
     }
 
+    public POIInfo(double longitude, double latitude, int type, int speed, int dir, String description, int id)
+    {
+        this(longitude, latitude, type, speed, dir, id);
+        this.description = description;
+    }
 
     public final static double AVERAGE_RADIUS_OF_EARTH_M = 6371000;
     /** Compute distance to another point in meter using Haversine formula */
@@ -49,6 +66,8 @@ public class POIInfo implements Coordinate
 
         return (int) (Math.round(AVERAGE_RADIUS_OF_EARTH_M * c));
     }
+
+    public double distanceTo(Coordinate c) { return distanceTo(c.getLongitude(), c.getLatitude()); }
 
     /** The Point of interest location */
     @Override
