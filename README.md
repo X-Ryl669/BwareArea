@@ -13,3 +13,8 @@ Since it's using an overlay, you can use it on offline map application that does
 Since it's not using the network, it does not consume more battery downloading/syncing the POI (it's done once), and should be low on battery usage.
 
 Any improvement welcome. 
+
+## Some eye candy:
+![Widget](/widget.png?raw=true "Widget")
+
+![Settings](/settings.png?raw=true "Settings")
