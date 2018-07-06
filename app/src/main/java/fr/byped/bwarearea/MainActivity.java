@@ -312,6 +312,7 @@ public class MainActivity extends AppCompatActivity {
             }
         } else if (requestCode == GET_FILE)
         {
+            if (data == null) return;
             try {
                 InputStream is = getContentResolver().openInputStream(data.getData());
 
