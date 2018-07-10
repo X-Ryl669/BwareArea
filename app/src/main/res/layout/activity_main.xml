@@ -15,15 +15,60 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/appbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/appbar_padding_top"
+            android:theme="@style/AppTheme.AppBarOverlay">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="right|center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="48dp"
+                    android:layout_height="?attr/actionBarSize"
+                    android:layout_gravity="right|center_vertical"
+                    android:layout_marginLeft="10sp"
+                    app:srcCompat="@drawable/ic_bware" />
+
+                <android.support.v7.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="?attr/actionBarSize"
+                    android:layout_gravity="left|start"
+                    android:layout_weight="1"
+                    android:background="?attr/colorPrimary"
+                    android:gravity="left|start"
+                    android:textAlignment="textStart"
+                    app:layout_scrollFlags="scroll|enterAlways"
+                    app:popupTheme="@style/AppTheme.PopupOverlay"
+                    app:title="@string/app_name">
+
+                </android.support.v7.widget.Toolbar>
+
+            </LinearLayout>
+
+        </android.support.design.widget.AppBarLayout>
+
         <TextView
             android:id="@+id/POIDBLabel"
             android:layout_width="match_parent"
             android:layout_height="@dimen/defaultLineHeight"
+            android:layout_marginLeft="2sp"
+            android:layout_marginRight="2sp"
             android:text="@string/point_of_interest_database"
             android:textColor="?android:attr/colorForeground"
             android:textSize="18sp" />
 
         <ProgressBar
+            android:layout_marginLeft="2sp"
+            android:layout_marginRight="2sp"
             android:id="@+id/importProgress"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
@@ -31,6 +76,8 @@
             android:visibility="gone" />
 
         <Button
+            android:layout_marginLeft="2sp"
+            android:layout_marginRight="2sp"
             android:id="@+id/POIDBLoad"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -38,19 +85,25 @@
             android:textColor="?android:attr/colorForeground" />
 
         <TextView
+            android:layout_marginLeft="2sp"
+            android:layout_marginRight="2sp"
             android:id="@+id/distanceLabel"
             android:layout_width="match_parent"
             android:layout_height="@dimen/defaultLineHeight"
-            android:text="Distance to warn before"
+            android:text="@string/distance_to_warn_before"
             android:textColor="?android:attr/colorForeground"
             android:textSize="18sp" />
 
         <SeekBar
+            android:layout_marginLeft="2sp"
+            android:layout_marginRight="2sp"
             android:id="@+id/distance"
             android:layout_width="match_parent"
             android:layout_height="@dimen/defaultLineHeight" />
 
         <TextView
+            android:layout_marginLeft="2sp"
+            android:layout_marginRight="2sp"
             android:id="@+id/alertOverspeed"
             android:layout_width="match_parent"
             android:layout_height="@dimen/defaultLineHeight"
@@ -59,6 +112,8 @@
             android:textSize="18sp" />
 
         <SeekBar
+            android:layout_marginLeft="2sp"
+            android:layout_marginRight="2sp"
             android:id="@+id/overspeed"
             android:layout_width="match_parent"
             android:layout_height="@dimen/defaultLineHeight"
@@ -66,6 +121,8 @@
             android:progress="5" />
 
         <Switch
+            android:layout_marginLeft="2sp"
+            android:layout_marginRight="2sp"
             android:id="@+id/limitRange"
             android:layout_width="match_parent"
             android:layout_height="@dimen/defaultLineHeight"
@@ -74,6 +131,8 @@
             android:textSize="18sp" />
 
         <Switch
+            android:layout_marginLeft="2sp"
+            android:layout_marginRight="2sp"
             android:id="@+id/bluetoothStart"
             android:layout_width="match_parent"
             android:layout_height="50sp"
@@ -81,9 +140,15 @@
             android:textColor="?android:attr/colorForeground"
             android:textSize="18sp" />
 
-        <Space
+        <Switch
+            android:layout_marginLeft="2sp"
+            android:layout_marginRight="2sp"
+            android:id="@+id/logPosition"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/defaultLineHeight" />
+            android:layout_height="wrap_content"
+            android:text="@string/log_positions"
+            android:textColor="?android:attr/colorForeground"
+            android:textSize="18sp" />
 
         <Space
             android:layout_width="match_parent"
@@ -107,10 +172,19 @@
                 android:gravity="center"
                 android:text="@string/start_service" />
 
+            <Button
+                android:id="@+id/quit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/quit" />
+
             <Space
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
+
         </LinearLayout>
+
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

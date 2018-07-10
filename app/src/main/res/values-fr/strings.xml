@@ -28,4 +28,23 @@
     <string name="bluetooth_device_label">Démarrage automatique lorsque %s est présent</string>
     <string name="alert_overspeed">Alerte sur dépassement de vitesse</string>
     <string name="base_overspeed">Alerter dès %dkm/h au-dessus</string>
+    <string name="bware_is_running">Bware fonctionne</string>
+    <string name="tap_to_settings">Toucher ici pour les paramètres</string>
+    <string name="app_name_permissions">BwareArea - Permissions</string>
+    <string name="perm_page0">Ces pages expliquent les permissions dont l\'application a besoin pour fonctionner. Glisser vers la droite pour continuer.</string>
+    <string name="perm_title0">Bienvenue dans BwareArea.</string>
+    <string name="error_permissions">L\'autorisation de dessiner au-dessus des autres applications n\'est pas accordée. Il faut cette permission pour que l\'application fonctionne</string>
+    <string name="distance_to_warn_before">Distance d\'alerte</string>
+    <string name="perm_title1">Besoin d\'accès au GPS</string>
+    <string name="perm_title2">Besoin de dessiner au dessus</string>
+    <string name="perm_title3">Besoin de lire et écrire sur la carte mémoire</string>
+    <string name="perm_title4">Besoin de désactiver l\'optimisation de batterie</string>
+    <string name="perm_title5">Félicitations!</string>
+    <string name="perm_page1">Cette application doit accéder au GPS pour savoir la position actuelle.</string>
+    <string name="perm_page2">Cette application doit pouvoir dessiner au dessus des autres applications pour afficher son widget.</string>
+    <string name="perm_page3">Cette application doit accéder au stockage externe pour lire vos fichiers de points d\'intérets et écrire les traces GPX.</string>
+    <string name="perm_page4">Cette application doit désactiver les optimisations pour réagir au nouvelles positions GPS fréquemment.</string>
+    <string name="perm_page5">Vous avez fini, il n\'y a plus qu\'à importer vos points d\'intérêts</string>
+    <string name="quit">Quitter</string>
+    <string name="log_positions">Remember all positions in a GPX when approaching a POI</string>
 </resources>

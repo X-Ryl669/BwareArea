@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothProfile;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -16,11 +17,14 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -63,10 +67,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.appbar);
+        setSupportActionBar(toolbar);
         setContentView(R.layout.activity_main);
 
 
         pref = getSharedPreferences("settings", Context.MODE_PRIVATE);
+
+        // Check if we have all required permissions (if not, start the WhyPermissionActivity)
+        boolean canUseGPS = Build.VERSION.SDK_INT < 23 || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        boolean canAccessExternalStorage = Build.VERSION.SDK_INT < 23 || (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+        boolean canOverlay = Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(MainActivity.this);
+        boolean canSkipDoze = Build.VERSION.SDK_INT < Build.VERSION_CODES.M || ((PowerManager)getSystemService(Context.POWER_SERVICE)).isIgnoringBatteryOptimizations(getPackageName());
+        if (!canUseGPS || !canAccessExternalStorage || !canOverlay || !canSkipDoze)
+        {
+            // Need to start the WhyPermissionActivity
+            Intent intent = new Intent(this, WhyPermissionActivity.class);
+            startActivity(intent);
+        }
 
 
         POIDBLabel = (TextView)findViewById(R.id.POIDBLabel);
@@ -174,10 +192,22 @@ public class MainActivity extends AppCompatActivity {
         importDB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (MainActivity.this.isReadStoragePermissionGranted())
                     selectFileToImport();
                 // Else, it'll be run while the permission is granted asynchronously
             }
+        });
+
+        // Log all positions if the user said so
+        final Switch logPos = (Switch)findViewById(R.id.logPosition);
+        boolean logFile = pref.getBoolean("logFile", false);
+        logPos.setChecked(logFile);
+        logPos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SharedPreferences.Editor editor = pref.edit();
+                editor.putBoolean("logFile", logPos.isChecked());
+                editor.apply();
+                }
         });
 
         // Service starting here
@@ -185,17 +215,23 @@ public class MainActivity extends AppCompatActivity {
         startService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MainActivity.this.askForSystemOverlayPermission();
-
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(MainActivity.this)) {
-                    if (isLocationFetchingPermissionGranted())
-                        startService();
-                } else {
-                    errorToast();
-                }
+                startService();
             }
         });
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, new IntentFilter("finish_activity"));
+
+        // Stop application here
+        Button stop = (Button)findViewById(R.id.quit);
+        stop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (Build.VERSION.SDK_INT >= 21)
+                    MainActivity.this.finishAndRemoveTask();
+                else
+                    MainActivity.this.finishAffinity();
+            }
+        });
     }
 
     @Override
@@ -249,42 +285,14 @@ public class MainActivity extends AppCompatActivity {
         return adapter.getProfileProxy(this, profileListener, BluetoothProfile.HEADSET);
     }
 
-    private static final int DRAW_OVER_OTHER_APP_PERMISSION = 123;
-    private void askForSystemOverlayPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this))
-        {
-            // If the draw over permission is not available to open the settings screen
-            // to grant the permission.
-            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
-            startActivityForResult(intent, DRAW_OVER_OTHER_APP_PERMISSION);
-        }
-    }
 
-    private static final int GET_GPS_POS = 125;
-    private boolean isLocationFetchingPermissionGranted() {
-        if (Build.VERSION.SDK_INT >= 23)
-        {
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED)
-            {
-                Log.v("BwareArea","Fine location permission granted");
-                return true;
-            } else {
-                Log.v("BwareArea","Fine location permission is revoked");
-                ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.ACCESS_FINE_LOCATION }, GET_GPS_POS);
-                return false;
-            }
-        }
-        else { // permission is automatically granted on sdk<23 upon installation
-            Log.v("BwareArea","Fine location permission granted");
-            return true;
-        }
-    }
+
+
 
     /** Start the main service and finish this activity */
     private void startService()
     {
-        startService(new Intent(MainActivity.this, FloatingWarnerService.class));
+        ContextCompat.startForegroundService(this, new Intent(MainActivity.this, FloatingWarnerService.class));
         Toast.makeText(getApplicationContext(), R.string.started_service, Toast.LENGTH_LONG).show();
 //        MainActivity.this.finish();
     }
@@ -301,16 +309,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == DRAW_OVER_OTHER_APP_PERMISSION) {
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (!Settings.canDrawOverlays(this)) {
-                    // Permission is not available. Display error text.
-                    errorToast();
-                    finish();
-                }
-            }
-        } else if (requestCode == GET_FILE)
+        if (requestCode == GET_FILE)
         {
             if (data == null) return;
             try {
@@ -324,41 +323,12 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("Bware", "File not found : "+ e.getMessage());
 
             }
-/*
-            SharedPreferences.Editor editor = pref.edit();
-            editor.putString("importFile", currFileURI);
-            editor.apply();
-
-            // Stop any running service
-            stopService(new Intent(this, FloatingWarnerService.class));
-            // Let it run, so it can import it
-            startService(new Intent(this, FloatingWarnerService.class));
-            */
         }
         else {
             super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
-    public boolean isReadStoragePermissionGranted() {
-        if (Build.VERSION.SDK_INT >= 23)
-        {
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED)
-            {
-                Log.v("BwareArea","Read storage permission granted");
-                return true;
-            } else {
-                Log.v("BwareArea","Read storage Permission is revoked");
-                ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE }, 3);
-                return false;
-            }
-        }
-        else { // permission is automatically granted on sdk<23 upon installation
-            Log.v("BwareArea","Read permission is granted");
-            return true;
-        }
-    }
 
     void selectFileToImport()
     {
@@ -370,30 +340,7 @@ public class MainActivity extends AppCompatActivity {
         MainActivity.this.startActivityForResult(Intent.createChooser(intent, getText(R.string.select_file)),GET_FILE);
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode)
-        {
-            case 3:
-                Log.d("BwareArea", "External storage");
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                {
-                    Log.v("BwareArea","Permission: "+ permissions[0] + "was " + grantResults[0]);
-                    selectFileToImport();
-                }
-                break;
-            case GET_GPS_POS:
-                Log.d("BwareArea", "GPS fetching");
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                {
-                    Log.v("BwareArea","Permission: "+ permissions[0] + "was " + grantResults[0]);
-                    startService();
-                }
-                break;
-            default: break;
-        }
-    }
+
 
     private void errorToast() {
         Toast.makeText(this, "Draw over other app permission not available. Can't start the application without the permission.", Toast.LENGTH_LONG).show();

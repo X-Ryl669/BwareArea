@@ -1,22 +1,23 @@
 package fr.byped.bwarearea;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.os.AsyncTask;
-import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.constraint.solver.widgets.WidgetContainer;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -25,10 +26,16 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
-public class FloatingWarnerService extends Service implements LocationListener {
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.sql.Timestamp;
+import java.util.Calendar;
+
+public class FloatingWarnerService extends Service {
     private WindowManager mWindowManager;
     private View mOverlayView;
     private FloatingWidget widgetContainer;
@@ -36,7 +43,10 @@ public class FloatingWarnerService extends Service implements LocationListener {
     private SharedPreferences pref;
     private Binder binder;
     private LocationManager locationManager;
+    private BwareLocationListener locListener;
     private int poiCount;
+    private FileWriter logToFile;
+    private boolean trackOpened;
 
 
 
@@ -46,6 +56,45 @@ public class FloatingWarnerService extends Service implements LocationListener {
         return binder;
     }
 
+
+    private void showLocationNotification()
+    {
+        Intent intent = new Intent("finish_service");
+        intent.setClass(this, FloatingWarnerService.class);
+        // You can also include some extra data.
+        intent.putExtra("message", "From service!");
+        Notification notification = new NotificationCompat.Builder(this, "main")
+                .setContentTitle(getString(R.string.bware_is_running))
+                .setContentText(getString(R.string.tap_to_settings))
+                .setSmallIcon(R.mipmap.ic_launcher_bware)
+                .setContentIntent(PendingIntent.getService(this, 0, intent, 0))
+                .setOngoing(true)
+                .build();
+
+
+
+        startForeground(1, notification);
+
+    }
+
+    @Override
+    public int onStartCommand (Intent intent, int flags, int startId)
+    {
+        if (intent.getAction() == "finish_service")
+        {
+            stopCleanly();
+            // And restart the activity
+            startActivity(new Intent(this, MainActivity.class));
+        }
+        return Service.START_STICKY;
+    }
+
+    @SuppressLint("all")
+    private int getOverlayType()
+    {
+        int typePhone = 2002; // This is poor man escape for deprecation warning
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.O ? typePhone : WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -57,16 +106,18 @@ public class FloatingWarnerService extends Service implements LocationListener {
         collection = new POICollection(this);
         pref = getSharedPreferences("settings", Context.MODE_PRIVATE);
         poiCount = (int)pref.getLong("poiCount", 0);
+        trackOpened = false;
 
         setTheme(R.style.AppTheme);
 
         mOverlayView = LayoutInflater.from(this).inflate(R.layout.floating_warner_widget, null);
 
 
+
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_PHONE,
+                getOverlayType(),
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
 
@@ -80,7 +131,7 @@ public class FloatingWarnerService extends Service implements LocationListener {
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mWindowManager.addView(mOverlayView, params);
 
-        widgetContainer = (FloatingWidget)mOverlayView.findViewById(R.id.widgetContainer);
+        widgetContainer = mOverlayView.findViewById(R.id.widgetContainer);
         widgetContainer.bindAll(mOverlayView);
         widgetContainer.setRangeAndAlertAndWarnDistance(pref.getBoolean("onlyRange", false), pref.getInt("distance", 300), pref.getInt("overspeed", 5));
         widgetContainer.setOnTouchListener(new View.OnTouchListener() {
@@ -154,12 +205,27 @@ public class FloatingWarnerService extends Service implements LocationListener {
 
         // We need to create the VP Tree from all the POI so let's do it now
 //        if(android.os.Debug.isDebuggerConnected()) poiCount = 100;
-        new StartService(widgetContainer, collection).execute(poiCount);
+        new StartService(widgetContainer, collection, this).execute(poiCount);
 
         Intent intent = new Intent("finish_activity");
         // You can also include some extra data.
         intent.putExtra("message", "From service!");
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+        // Create log file if required
+        if (pref.getBoolean("logFile", false))
+        {
+            try {
+                File sdFolder = new File(Environment.getExternalStorageDirectory(), "Bware");
+//                File sdFolder = new File(getFilesDir(), "Bware");
+                if (!sdFolder.exists()) sdFolder.mkdir();
+                logToFile = new FileWriter(new File(sdFolder, String.format("track_%d.gpx", Calendar.getInstance().getTime().getTime())));
+                logToFile.write("<?xml version='1.0' encoding='Utf-8' standalone='yes' ?>\n<gpx xmlns=\"http://www.topografix.com/GPX/1/0\" version=\"1.0\" creator=\"fr.byped.bwarearea\">\n");
+            } catch (Exception e) {
+                Log.e("Bware", "Got exception while creating writer: " + e.getMessage());
+                logToFile = null;
+            }
+        }
     }
 
     @Override
@@ -169,17 +235,44 @@ public class FloatingWarnerService extends Service implements LocationListener {
         if (mOverlayView != null)
             mWindowManager.removeView(mOverlayView);
     }
+/*
+    public static Thread performOnBackgroundThread(final Runnable runnable) {
+        final Thread t = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    runnable.run();
+                } finally {
 
+                }
+            }
+        };
+        t.start();
+        return t;
+    }
+*/
 
     public FloatingWarnerService() {
     }
 
     private void stopLocation() {
         if (locationManager != null) {
-            locationManager.removeUpdates(this);
+            locationManager.removeUpdates(locListener);
+            locListener = null;
             locationManager = null;
         }
-
+        if (logToFile != null) {
+            try {
+                if (trackOpened) logToFile.append("</trkseg></trk>\n");
+                trackOpened = false;
+                logToFile.append("</gpx>\n");
+                logToFile.close();
+            } catch(IOException e)
+            {
+                Log.e("Bware", "Error while writing footer to gpx file: " + e.getMessage());
+            }
+            logToFile = null;
+        }
     }
 
     private void stopCleanly() {
@@ -190,6 +283,8 @@ public class FloatingWarnerService extends Service implements LocationListener {
     /** Location stuff below */
     private void doneImporting()
     {
+        FloatingWarnerService.this.showLocationNotification();
+
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         if (locationManager == null || locationManager.getAllProviders().isEmpty())
         {
@@ -200,12 +295,15 @@ public class FloatingWarnerService extends Service implements LocationListener {
         try {
 //            String gpsProvider = locationManager.getProvider(locationManager.GPS_PROVIDER);
 //            for (String provider : locationManager.getAllProviders()) {
-                Log.i("Bware", "provider " + locationManager.GPS_PROVIDER);
+                Log.i("Bware", "provider " + LocationManager.GPS_PROVIDER);
+                locListener = new BwareLocationListener(collection, widgetContainer);
+                Location loc = locationManager.getLastKnownLocation(locationManager.GPS_PROVIDER);
+                Log.i("Bware", "Initializing with loc: " + loc);
                 // search updated location
                // onLocationChanged(locationManager.getLastKnownLocation(locationManager.GPS_PROVIDER));
                // locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 2000, 50, this);
-                locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 0, 0, this);
-                locationManager.requestLocationUpdates(locationManager.NETWORK_PROVIDER, 0, 0, this);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locListener);
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locListener);
   //          }
         } catch(SecurityException e)
         {
@@ -213,6 +311,7 @@ public class FloatingWarnerService extends Service implements LocationListener {
             Toast.makeText(this, R.string.cant_get_location_manager, Toast.LENGTH_LONG).show();
             stopCleanly();
         }
+
     }
 
     public class BaseCoord implements Coordinate
@@ -233,30 +332,7 @@ public class FloatingWarnerService extends Service implements LocationListener {
         public float speed() { return loc.getSpeed(); }
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
-        if (location == null) return;
-        BaseCoord loc = new BaseCoord(location);
-        POIInfo poi = collection.getClosestPoint(loc);
-        widgetContainer.setClosestPOI(poi, loc, loc.speed());
-    }
 
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-        Log.v("Bware", "Provider status changed: " + s + "(" + i + ")");
-
-    }
-
-    @Override
-    public void onProviderEnabled(String s) {
-        Log.v("Bware", "Provider enabled: " + s);
-
-    }
-
-    @Override
-    public void onProviderDisabled(String s) {
-        Log.v("Bware", "Provider disabled: " + s);
-    }
 
     public class Binder extends android.os.Binder {
         public FloatingWarnerService getService() {
@@ -266,10 +342,13 @@ public class FloatingWarnerService extends Service implements LocationListener {
 
 
 
-    class StartService extends AsyncTask<Integer, Integer, String>
+    private static class StartService extends AsyncTask<Integer, Integer, String>
     {
-        FloatingWidget widget;
-        POICollection   collection;
+        FloatingWidget                               widget;
+        POICollection                                collection;
+        private WeakReference<FloatingWarnerService> service;
+        int                                          poiCount;
+
 
         @Override
         protected String doInBackground(Integer... params)
@@ -288,8 +367,7 @@ public class FloatingWarnerService extends Service implements LocationListener {
         protected void onPostExecute(String result) {
             collection.finishVPTreeIterativeBuild();
             widget.doneImporting();
-            FloatingWarnerService.this.doneImporting();
-
+            service.get().doneImporting();
         }
         @Override
         protected void onPreExecute() {
@@ -300,12 +378,82 @@ public class FloatingWarnerService extends Service implements LocationListener {
             widget.updateImport(values[0]);
         }
 
-        StartService(FloatingWidget widget, POICollection collection)
+        StartService(FloatingWidget widget, POICollection collection, FloatingWarnerService service)
         {
             this.widget = widget;
             this.collection = collection;
+            this.poiCount = service.poiCount;
+            this.service = new WeakReference<>(service);
         }
     }
 
+
+    public class BwareLocationListener implements LocationListener
+    {
+        FloatingWidget widgetContainer;
+        POICollection  collection;
+        POIInfo        lastPOI;
+
+        public String toGPXTrackPoint(Location loc) {
+            byte timebytes[] = new Timestamp(loc.getTime()).toString().getBytes();
+            timebytes[10]='T'; timebytes[19]='Z';
+
+            return String.format("<trkpt lon=\"%f\" lat=\"%f\"><ele>%f</ele><magvar>%d</magvar><time>%s</time></trkpt>\n", loc.getLongitude(), loc.getLatitude(), loc.getAltitude(), Math.round(loc.getBearing()), new String(timebytes).substring(0,20));
+        }
+
+        @Override
+        public void onLocationChanged(Location location) {
+            if (location == null) return;
+
+
+            BaseCoord loc = new BaseCoord(location);
+            POIInfo poi = collection.getClosestPoint(loc);
+            double dist = poi.distanceTo(loc);
+
+            if (logToFile != null) {
+                try {
+                    if (lastPOI == null && poi != null && dist <= 300) // Here, we don't follow the set distance to avoid too verbose information
+                    {
+                        logToFile.append(String.format("<trk><desc>%s</desc><trkseg>\n", poi.getInfo()));
+                        logToFile.append(toGPXTrackPoint(location));
+                        trackOpened = true;
+                    } else if (dist > 300 && trackOpened) {
+                        lastPOI = null;
+                        logToFile.append("</trkseg></trk>\n");
+                        trackOpened = false;
+                    }
+
+                } catch (IOException e) {
+                    Log.e("Bware", "Exception while storing new point in GPX: " + e.getMessage());
+                    logToFile = null;
+                }
+            }
+            widgetContainer.setClosestPOI(poi, loc, loc.speed(), dist);
+            lastPOI = poi;
+        }
+
+        @Override
+        public void onStatusChanged(String s, int i, Bundle bundle) {
+            Log.v("Bware", "Provider status changed: " + s + "(" + i + ")");
+
+        }
+
+        @Override
+        public void onProviderEnabled(String s) {
+            Log.v("Bware", "Provider enabled: " + s);
+
+        }
+
+        @Override
+        public void onProviderDisabled(String s) {
+            Log.v("Bware", "Provider disabled: " + s);
+        }
+
+        BwareLocationListener(POICollection collection, FloatingWidget widgetContainer)
+        {
+            this.collection = collection;
+            this.widgetContainer = widgetContainer;
+        }
+    }
 
 }

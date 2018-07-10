@@ -89,7 +89,7 @@ public class FloatingWidget extends FrameLayout
         return getContext().getString(POIInfo.typesToID[0]);
     }
 
-    private void dontWarn(float speedInMperS)
+    private void dontWarn(float speedInKmH)
     {
         distance.setVisibility(View.GONE);
         type.setVisibility(View.GONE);
@@ -97,7 +97,7 @@ public class FloatingWidget extends FrameLayout
         dontWorry.setVisibility(View.VISIBLE);
     }
 
-    private void warn(double dist, float speedInMperS)
+    private void warn(double dist, float speedInKmH)
     {
         if (onlyRange) distance.setText("---");
         else distance.setText(String.format("%dm", Math.round(dist)));
@@ -106,8 +106,8 @@ public class FloatingWidget extends FrameLayout
         speed.setVisibility(View.VISIBLE);
         dontWorry.setVisibility(View.GONE);
 
-        if (alertOverspeed > 0 && Math.round(speedInMperS / 3.6) > lastPOI.speedKmh + alertOverspeed && !silentAlert)
-        {   // Alert should be raised, only if not silented
+        if (alertOverspeed > 0 && Math.round(speedInKmH) > (lastPOI.speedKmh + alertOverspeed) && !silentAlert)
+        {   // Alert should be raised, only if not silenced
             speed.setBackground(overspeedAnim);
             if (!overspeedAnim.isRunning()) {
                 overspeedAnim.start();
@@ -128,11 +128,10 @@ public class FloatingWidget extends FrameLayout
         }
     }
 
-    public void setClosestPOI(POIInfo poi, Coordinate current, float speedInMperS)
+    public void setClosestPOI(POIInfo poi, Coordinate current, float speedInKmH, double dist)
     {
         if (poi == null) return;
 
-        double dist = poi.distanceTo(current);
         // Should we make the next alert silent ?
         // We don't if it's a new POI
         if (lastPOI == null || lastPOI.id != poi.id) {
@@ -160,12 +159,12 @@ public class FloatingWidget extends FrameLayout
         else
             speed.setText("???");
         type.setText(getPOITypeAsString(poi.type));
-        currentSpeed.setText(String.format("%dkm/h", Math.round(speedInMperS / 3.6)));
+        currentSpeed.setText(String.format("%dkm/h", Math.round(speedInKmH)));
 
         if (dist > warnDistance)
-            dontWarn(speedInMperS);
+            dontWarn(speedInKmH);
         else
-            warn(dist, speedInMperS);
+            warn(dist, speedInKmH);
     }
 
     private int poiCount;

@@ -69,6 +69,11 @@ public class POIInfo implements Coordinate
 
     public double distanceTo(Coordinate c) { return distanceTo(c.getLongitude(), c.getLatitude()); }
 
+    public String getInfo()
+    {
+        return String.format("id:%d, lat:%f, lon:%f, type:%d, speed:%d, dir: %d", id, latitude, longitude, type, speedKmh, directionDegree);
+    }
+
     /** The Point of interest location */
     @Override
     public double getLongitude() {
