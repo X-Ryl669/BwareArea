@@ -1,6 +1,7 @@
 package fr.byped.bwarearea;
 
 
+import java.util.Locale;
 
 /** The Point of Interest information */
 public class POIInfo implements Coordinate
@@ -71,7 +72,7 @@ public class POIInfo implements Coordinate
 
     public String getInfo()
     {
-        return String.format("id:%d, lat:%f, lon:%f, type:%d, speed:%d, dir: %d", id, latitude, longitude, type, speedKmh, directionDegree);
+        return String.format(Locale.ROOT, "id:%d, lat:%f, lon:%f, type:%d, speed:%d, dir: %d", id, latitude, longitude, type, speedKmh, directionDegree);
     }
 
     /** The Point of interest location */

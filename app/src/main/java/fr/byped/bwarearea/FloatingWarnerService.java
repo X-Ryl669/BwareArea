@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.Locale;
 
 public class FloatingWarnerService extends Service {
     private WindowManager mWindowManager;
@@ -398,7 +399,7 @@ public class FloatingWarnerService extends Service {
             byte timebytes[] = new Timestamp(loc.getTime()).toString().getBytes();
             timebytes[10]='T'; timebytes[19]='Z';
 
-            return String.format("<trkpt lon=\"%f\" lat=\"%f\"><ele>%f</ele><magvar>%d</magvar><time>%s</time></trkpt>\n", loc.getLongitude(), loc.getLatitude(), loc.getAltitude(), Math.round(loc.getBearing()), new String(timebytes).substring(0,20));
+            return String.format(Locale.ROOT, "<trkpt lon=\"%f\" lat=\"%f\"><ele>%f</ele><magvar>%d</magvar><time>%s</time></trkpt>\n", loc.getLongitude(), loc.getLatitude(), loc.getAltitude(), Math.round(loc.getBearing()), new String(timebytes).substring(0,20));
         }
 
         @Override
@@ -412,24 +413,25 @@ public class FloatingWarnerService extends Service {
 
             if (logToFile != null) {
                 try {
-                    if (lastPOI == null && poi != null && dist <= 300) // Here, we don't follow the set distance to avoid too verbose information
+                    if (poi != null && dist <= 300 && !trackOpened) // Here, we don't follow the set distance to avoid too verbose information
                     {
                         logToFile.append(String.format("<trk><desc>%s</desc><trkseg>\n", poi.getInfo()));
-                        logToFile.append(toGPXTrackPoint(location));
                         trackOpened = true;
                     } else if (dist > 300 && trackOpened) {
-                        lastPOI = null;
                         logToFile.append("</trkseg></trk>\n");
                         trackOpened = false;
                     }
+
+                    if (trackOpened)
+                        logToFile.append(toGPXTrackPoint(location));
 
                 } catch (IOException e) {
                     Log.e("Bware", "Exception while storing new point in GPX: " + e.getMessage());
                     logToFile = null;
                 }
             }
-            widgetContainer.setClosestPOI(poi, loc, loc.speed(), dist);
-            lastPOI = poi;
+            widgetContainer.setClosestPOI(poi, loc, loc.speed() * 3.6f, dist);
+//            lastPOI = poi;
         }
 
         @Override
