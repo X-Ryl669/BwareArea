@@ -38,7 +38,7 @@ This, unfortunately fails for me, because the metadata stored in the current fdr
 cd ..
 git clone --depth=1 https://gitlab.com/fdroid/fdroidserver.git
 export PATH="$PWD/fdroidserver:$PATH"
-sudo port install py36-pip py36-ruamel-yaml
+sudo port install py36-pip py36-ruamel-yaml py36-requests
 sudo pip-3.6 install --upgrade pyasn1-modules pyasn1 pyyaml
 cd fdroiddata
 fdroid readmeta
@@ -46,7 +46,10 @@ fdroid readmeta
 Then run:
 `fdroid import --url https://github.com/you/yourSoftware`
 
-You can modify the generated file in `fdroiddata/metadata/<yourpackagename>.txt`
+You can modify the generated file in `fdroiddata/metadata/<yourpackagename>.yml`. If you look at other packages, you'll find out that they all use `.txt` format so it might be easier to switch to this format instead (the parser is more tolerant).
+
+
+
 
 
 

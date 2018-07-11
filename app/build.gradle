@@ -2,9 +2,6 @@ apply plugin: 'com.android.application'
 
 repositories {
     mavenCentral()
-    maven {
-        url "https://mvnrepository.com/artifact/com.eatthepath/jvptree-parent"
-    }
 }
 
 
