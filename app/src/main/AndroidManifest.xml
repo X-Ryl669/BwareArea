@@ -41,7 +41,6 @@
 
         <activity
             android:name=".WhyPermissionActivity"
-            android:label="@string/title_activity_why_permission"
             android:icon="@drawable/ic_bware"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
