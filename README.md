@@ -1,6 +1,8 @@
 # BwareArea
 
-This is a Point Of Interest (POI) tracking application that works offline and can be used to display a warning when approaching any
+This is a Point Of Interest (POI) tracking application that works offline and can be used to display a warning when approaching any.
+
+<a href="https://f-droid.org/packages/fr.byped.bwarearea"><img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="100"></a>
 
 It imports iGO's comma separated value file format (it's a CSV with `Lon,Lat,Type,Speed,Dirtype,DirectionDegree` columns), like `speedcam.txt`.
 
