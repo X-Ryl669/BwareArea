@@ -5,6 +5,7 @@ This is a Point Of Interest (POI) tracking application that works offline and ca
 <a href="https://f-droid.org/packages/fr.byped.bwarearea"><img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="100"></a>
 
 It imports iGO's comma separated value file format (it's a CSV with `Lon,Lat,Type,Speed,Dirtype,DirectionDegree` columns), like `speedcam.txt`.
+It can now import GPX files (version 1.1) with POI set as waypoint. The POI speed is extracted from the waypoint's name (any number in there will be set to the speed). 
 
 Then it displays a widget on top of the screen that's showing the closest POI, its speed and type.
 It's also filtering POI that are further than a set distance, and can alert when your own speed is over the limit.
