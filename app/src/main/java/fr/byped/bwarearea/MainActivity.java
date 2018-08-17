@@ -34,6 +34,10 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.singhajit.sherlock.core.Sherlock;
+import com.singhajit.sherlock.core.investigation.Crash;
+import com.singhajit.sherlock.crashes.activity.CrashListActivity;
+
 import org.w3c.dom.Text;
 
 import java.io.FileNotFoundException;
@@ -62,17 +66,35 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    /** @section Sherlock */
+    private void showAllCrashes() {
+        startActivity(new Intent(this, CrashListActivity.class));
+    }
+
+    private void initCrashReporter() {
+        Sherlock.init(this); //Initializing Sherlock
+        List<Crash> crashes = Sherlock.getInstance().getAllCrashes();
+        if (pref.getInt("lastCrashCount", 0) != crashes.size()) {
+            // Remember the number of crashes to avoid displaying this page again
+            SharedPreferences.Editor editor = pref.edit();
+            editor.putInt("lastCrashCount", crashes.size());
+            editor.apply();
+            // Then display the crash activity
+            showAllCrashes();
+        }
+    }
 
     private static final int GET_FILE = 124;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        pref = getSharedPreferences("settings", Context.MODE_PRIVATE);
+        initCrashReporter();
         Toolbar toolbar = (Toolbar) findViewById(R.id.appbar);
         setSupportActionBar(toolbar);
         setContentView(R.layout.activity_main);
 
 
-        pref = getSharedPreferences("settings", Context.MODE_PRIVATE);
 
         // Check if we have all required permissions (if not, start the WhyPermissionActivity)
         boolean canUseGPS = Build.VERSION.SDK_INT < 23 || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
@@ -313,11 +335,31 @@ public class MainActivity extends AppCompatActivity {
         {
             if (data == null) return;
             try {
-                InputStream is = getContentResolver().openInputStream(data.getData());
+                // Try to figure out if it's txt or gpx.
+                // Since Android is not able to figure out a GPX is a text/xml, we need some way to solve this out.
+                String[] segments = data.getData().getLastPathSegment().split("\\.");
+                String ext = "";
+                if (segments.length > 1) ext = segments[1];
+                if (ext.equalsIgnoreCase("gpx"))
+                {
+                    // Likely GPX
+                    InputStream is = getContentResolver().openInputStream(data.getData());
+//                    GPXParser.POI[] pois = GPXParser.getPOIFromStream(this, is);
+//                    if (pois != null)
+                        new ImportGPXTask(this, is).execute(1);
+                } else if (ext.equalsIgnoreCase("txt"))
+                {
+                    // Likely txt
+                    InputStream is = getContentResolver().openInputStream(data.getData());
 
-                String[] lines = SpeedcamParser.getLinesFromStream(this, is);
-                if (lines != null)
-                    new ImportTask(this, lines).execute(lines.length);
+                    String[] lines = SpeedcamParser.getLinesFromStream(this, is);
+                    if (lines != null)
+                        new ImportTask(this, lines).execute(lines.length);
+                } else
+                {
+                    Toast.makeText(this, "Only iGO .txt and GPX format are supported", Toast.LENGTH_LONG).show();
+                }
+
             } catch (FileNotFoundException e)
             {
                 Log.e("Bware", "File not found : "+ e.getMessage());
@@ -334,7 +376,9 @@ public class MainActivity extends AppCompatActivity {
     {
         Intent intent = new Intent();
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("text/*");
+        intent.setType("*/*");
+        String[] mimetypes = {"text/*", "application/gpx+xml"};
+      //  intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
         intent.setAction(Intent.ACTION_GET_CONTENT);
 
         MainActivity.this.startActivityForResult(Intent.createChooser(intent, getText(R.string.select_file)),GET_FILE);
@@ -397,6 +441,59 @@ public class MainActivity extends AppCompatActivity {
             progressBar.setMax(lines.length);
             parser = new SpeedcamParser(collection);
 
+        }
+    }
+
+    class ImportGPXTask extends AsyncTask<Integer, Integer, String>
+    {
+        POICollection collection;
+        GPXParser parser;
+        Context ctx;
+        @Override
+        protected String doInBackground(Integer... params)
+        {
+            // We don't care about the params here
+            int max = parser.getPOIFromStream(ctx);
+            progressBar.setMax(max);
+
+            // Then start importing
+            for (; poiCount <= max; poiCount += 10) {
+                try {
+                    parser.importFromPOI(poiCount, 10 );
+                    publishProgress(poiCount);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            SharedPreferences.Editor editor = pref.edit();
+            editor.putLong("poiCount", parser.lastPOICount);
+            editor.apply();
+            return getString(R.string.import_completed);
+        }
+        @Override
+        protected void onPostExecute(String result) {
+            progressBar.setVisibility(View.GONE);
+            POIDBLabel.setText(result);
+
+        }
+        @Override
+        protected void onPreExecute() {
+            poiCount = 0;
+            progressBar.setVisibility(View.VISIBLE);
+            progressBar.setProgress(0);
+            POIDBLabel.setText(R.string.import_starting);
+        }
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            POIDBLabel.setText(String.format(getString(R.string.import_x_poi), values[0]));
+            progressBar.setProgress(values[0]);
+        }
+
+        ImportGPXTask(Context context, InputStream is)
+        {
+            ctx = context;
+            collection = new POICollection(context);
+            parser = new GPXParser(collection, is);
         }
     }
 

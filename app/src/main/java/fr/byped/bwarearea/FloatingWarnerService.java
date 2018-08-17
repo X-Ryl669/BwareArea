@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -85,7 +86,9 @@ public class FloatingWarnerService extends Service {
         {
             stopCleanly();
             // And restart the activity
-            startActivity(new Intent(this, MainActivity.class));
+            Intent i = new Intent(this, MainActivity.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(i);
         }
         return Service.START_STICKY;
     }
@@ -296,16 +299,22 @@ public class FloatingWarnerService extends Service {
         try {
 //            String gpsProvider = locationManager.getProvider(locationManager.GPS_PROVIDER);
 //            for (String provider : locationManager.getAllProviders()) {
-                Log.i("Bware", "provider " + LocationManager.GPS_PROVIDER);
-                locListener = new BwareLocationListener(collection, widgetContainer);
-                Location loc = locationManager.getLastKnownLocation(locationManager.GPS_PROVIDER);
-                Log.i("Bware", "Initializing with loc: " + loc);
-                // search updated location
-               // onLocationChanged(locationManager.getLastKnownLocation(locationManager.GPS_PROVIDER));
-               // locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 2000, 50, this);
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locListener);
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locListener);
-  //          }
+            Criteria criteria  = new Criteria();
+            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+            criteria.setAltitudeRequired(false);
+            criteria.setBearingRequired(false);
+            criteria.setCostAllowed(true);
+            criteria.setPowerRequirement(Criteria.POWER_LOW);
+
+            String provider = locationManager.getBestProvider(criteria, true);
+            Log.i("Bware", "provider " + provider);
+            locListener = new BwareLocationListener(collection, widgetContainer);
+            Location loc = locationManager.getLastKnownLocation(provider);
+            Log.i("Bware", "Initializing with loc: " + loc);
+            // search updated location
+           // onLocationChanged(locationManager.getLastKnownLocation(locationManager.GPS_PROVIDER));
+           // locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 2000, 50, this);
+            locationManager.requestLocationUpdates(provider, 2000, 50, locListener);
         } catch(SecurityException e)
         {
             Log.e("Bware", "Security exception while registering GPS precision location: " + e.getMessage());

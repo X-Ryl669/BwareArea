@@ -38,4 +38,9 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     // https://mvnrepository.com/artifact/com.eatthepath/jvptree-parent
     implementation 'com.eatthepath:jvptree:0.2'
+
+    debugCompile('com.github.ajitsing:sherlock:1.0.4@aar') {
+        transitive = true
+    }
+    releaseCompile('com.github.ajitsing:sherlock-no-op:1.0.4@aar')
 }

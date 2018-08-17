@@ -6,185 +6,191 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <android.support.design.widget.AppBarLayout
-            android:id="@+id/appbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="@dimen/appbar_padding_top"
-            android:theme="@style/AppTheme.AppBarOverlay">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="right|center_vertical"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:id="@+id/imageView"
-                    android:layout_width="48dp"
-                    android:layout_height="?attr/actionBarSize"
-                    android:layout_gravity="right|center_vertical"
-                    android:layout_marginLeft="10sp"
-                    app:srcCompat="@drawable/ic_bware" />
-
-                <android.support.v7.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="?attr/actionBarSize"
-                    android:layout_gravity="left|start"
-                    android:layout_weight="1"
-                    android:background="?attr/colorPrimary"
-                    android:gravity="left|start"
-                    android:textAlignment="textStart"
-                    app:layout_scrollFlags="scroll|enterAlways"
-                    app:popupTheme="@style/AppTheme.PopupOverlay"
-                    app:title="@string/app_name">
-
-                </android.support.v7.widget.Toolbar>
-
-            </LinearLayout>
-
-        </android.support.design.widget.AppBarLayout>
-
-        <TextView
-            android:id="@+id/POIDBLabel"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/defaultLineHeight"
-            android:layout_marginLeft="2sp"
-            android:layout_marginRight="2sp"
-            android:text="@string/point_of_interest_database"
-            android:textColor="?android:attr/colorForeground"
-            android:textSize="18sp" />
-
-        <ProgressBar
-            android:layout_marginLeft="2sp"
-            android:layout_marginRight="2sp"
-            android:id="@+id/importProgress"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/defaultLineHeight"
-            android:visibility="gone" />
-
-        <Button
-            android:layout_marginLeft="2sp"
-            android:layout_marginRight="2sp"
-            android:id="@+id/POIDBLoad"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/set_file_to_use"
-            android:textColor="?android:attr/colorForeground" />
-
-        <TextView
-            android:layout_marginLeft="2sp"
-            android:layout_marginRight="2sp"
-            android:id="@+id/distanceLabel"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/defaultLineHeight"
-            android:text="@string/distance_to_warn_before"
-            android:textColor="?android:attr/colorForeground"
-            android:textSize="18sp" />
-
-        <SeekBar
-            android:layout_marginLeft="2sp"
-            android:layout_marginRight="2sp"
-            android:id="@+id/distance"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/defaultLineHeight" />
-
-        <TextView
-            android:layout_marginLeft="2sp"
-            android:layout_marginRight="2sp"
-            android:id="@+id/alertOverspeed"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/defaultLineHeight"
-            android:text="@string/alert_overspeed"
-            android:textColor="?android:attr/colorForeground"
-            android:textSize="18sp" />
-
-        <SeekBar
-            android:layout_marginLeft="2sp"
-            android:layout_marginRight="2sp"
-            android:id="@+id/overspeed"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/defaultLineHeight"
-            android:max="50"
-            android:progress="5" />
-
-        <Switch
-            android:layout_marginLeft="2sp"
-            android:layout_marginRight="2sp"
-            android:id="@+id/limitRange"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/defaultLineHeight"
-            android:text="@string/limit_to_range_only"
-            android:textColor="?android:attr/colorForeground"
-            android:textSize="18sp" />
-
-        <Switch
-            android:layout_marginLeft="2sp"
-            android:layout_marginRight="2sp"
-            android:id="@+id/bluetoothStart"
-            android:layout_width="match_parent"
-            android:layout_height="50sp"
-            android:text="@string/bluetooth_trigger"
-            android:textColor="?android:attr/colorForeground"
-            android:textSize="18sp" />
-
-        <Switch
-            android:layout_marginLeft="2sp"
-            android:layout_marginRight="2sp"
-            android:id="@+id/logPosition"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/log_positions"
-            android:textColor="?android:attr/colorForeground"
-            android:textSize="18sp" />
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/defaultLineHeight" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <Space
-                android:layout_width="wrap_content"
+            <android.support.design.widget.AppBarLayout
+                android:id="@+id/appbar"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:paddingTop="@dimen/appbar_padding_top"
+                android:theme="@style/AppTheme.AppBarOverlay">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="right|center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/imageView"
+                        android:layout_width="48dp"
+                        android:layout_height="?attr/actionBarSize"
+                        android:layout_gravity="right|center_vertical"
+                        android:layout_marginLeft="10sp"
+                        app:srcCompat="@drawable/ic_bware" />
+
+                    <android.support.v7.widget.Toolbar
+                        android:id="@+id/toolbar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="?attr/actionBarSize"
+                        android:layout_gravity="left|start"
+                        android:layout_weight="1"
+                        android:background="?attr/colorPrimary"
+                        android:gravity="left|start"
+                        android:textAlignment="textStart"
+                        app:layout_scrollFlags="scroll|enterAlways"
+                        app:popupTheme="@style/AppTheme.PopupOverlay"
+                        app:title="@string/app_name">
+
+                    </android.support.v7.widget.Toolbar>
+
+                </LinearLayout>
+
+            </android.support.design.widget.AppBarLayout>
+
+            <TextView
+                android:id="@+id/POIDBLabel"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/defaultLineHeight"
+                android:layout_marginLeft="2sp"
+                android:layout_marginRight="2sp"
+                android:text="@string/point_of_interest_database"
+                android:textColor="?android:attr/colorForeground"
+                android:textSize="18sp" />
+
+            <ProgressBar
+                android:id="@+id/importProgress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/defaultLineHeight"
+                android:layout_marginLeft="2sp"
+                android:layout_marginRight="2sp"
+                android:visibility="gone" />
 
             <Button
-                android:id="@+id/startStop"
-                android:layout_width="wrap_content"
+                android:id="@+id/POIDBLoad"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="@string/start_service" />
+                android:layout_marginLeft="2sp"
+                android:layout_marginRight="2sp"
+                android:text="@string/set_file_to_use"
+                android:textColor="?android:attr/colorForeground" />
 
-            <Button
-                android:id="@+id/quit"
-                android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/distanceLabel"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/defaultLineHeight"
+                android:layout_marginLeft="2sp"
+                android:layout_marginRight="2sp"
+                android:text="@string/distance_to_warn_before"
+                android:textColor="?android:attr/colorForeground"
+                android:textSize="18sp" />
+
+            <SeekBar
+                android:id="@+id/distance"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/defaultLineHeight"
+                android:layout_marginLeft="2sp"
+                android:layout_marginRight="2sp" />
+
+            <TextView
+                android:id="@+id/alertOverspeed"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/defaultLineHeight"
+                android:layout_marginLeft="2sp"
+                android:layout_marginRight="2sp"
+                android:text="@string/alert_overspeed"
+                android:textColor="?android:attr/colorForeground"
+                android:textSize="18sp" />
+
+            <SeekBar
+                android:id="@+id/overspeed"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/defaultLineHeight"
+                android:layout_marginLeft="2sp"
+                android:layout_marginRight="2sp"
+                android:max="50"
+                android:progress="5" />
+
+            <Switch
+                android:id="@+id/limitRange"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/defaultLineHeight"
+                android:layout_marginLeft="2sp"
+                android:layout_marginRight="2sp"
+                android:text="@string/limit_to_range_only"
+                android:textColor="?android:attr/colorForeground"
+                android:textSize="18sp" />
+
+            <Switch
+                android:id="@+id/bluetoothStart"
+                android:layout_width="match_parent"
+                android:layout_height="50sp"
+                android:layout_marginLeft="2sp"
+                android:layout_marginRight="2sp"
+                android:text="@string/bluetooth_trigger"
+                android:textColor="?android:attr/colorForeground"
+                android:textSize="18sp" />
+
+            <Switch
+                android:id="@+id/logPosition"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/quit" />
+                android:layout_marginLeft="2sp"
+                android:layout_marginRight="2sp"
+                android:text="@string/log_positions"
+                android:textColor="?android:attr/colorForeground"
+                android:textSize="18sp" />
 
             <Space
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/defaultLineHeight" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:orientation="horizontal">
+
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <Button
+                    android:id="@+id/startStop"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/start_service" />
+
+                <Button
+                    android:id="@+id/quit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/quit" />
+
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+            </LinearLayout>
 
         </LinearLayout>
+    </ScrollView>
 
-    </LinearLayout>
 </android.support.constraint.ConstraintLayout>

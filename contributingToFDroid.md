@@ -48,6 +48,10 @@ Then run:
 
 You can modify the generated file in `fdroiddata/metadata/<yourpackagename>.yml`. If you look at other packages, you'll find out that they all use `.txt` format so it might be easier to switch to this format instead (the parser is more tolerant).
 
+When trying to lint, you might get error, and it's easily fixed by changing the `config.py` file, search for 'Summary' and replace by 'summary' (and do the same for 'Description' with 'description')
+
+Make sure the version in your build.gradle is the same as the one declared in the YAML/txt file.
+
 
 
 

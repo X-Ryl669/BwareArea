@@ -191,7 +191,7 @@ public class FloatingWidget extends FrameLayout
     public void updateImport(int value)
     {
         startProgress.setProgress(value);
-        distance.setText(String.format("%d%%", value * 100 / poiCount));
+        distance.setText(String.format("%d%%", poiCount != 0 ? value * 100 / poiCount : 100));
     }
 
     @Override
