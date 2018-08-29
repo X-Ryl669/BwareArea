@@ -13,8 +13,8 @@ android {
         applicationId "fr.byped.bwarearea"
         minSdkVersion 19
         targetSdkVersion 26
-        versionCode 2
-        versionName "0.6.4"
+        versionCode 3
+        versionName "0.6.5"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary true
     }
@@ -39,8 +39,8 @@ dependencies {
     // https://mvnrepository.com/artifact/com.eatthepath/jvptree-parent
     implementation 'com.eatthepath:jvptree:0.2'
 
-    debugCompile('com.github.ajitsing:sherlock:1.0.4@aar') {
+    debugImplementation('com.github.ajitsing:sherlock:1.0.4@aar') {
         transitive = true
     }
-    releaseCompile('com.github.ajitsing:sherlock-no-op:1.0.4@aar')
+    releaseImplementation('com.github.ajitsing:sherlock-no-op:1.0.4@aar')
 }
