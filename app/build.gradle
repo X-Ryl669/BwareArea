@@ -13,8 +13,8 @@ android {
         applicationId "fr.byped.bwarearea"
         minSdkVersion 19
         targetSdkVersion 26
-        versionCode 3
-        versionName "0.6.5"
+        versionCode 4
+        versionName "0.6.6"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary true
     }
