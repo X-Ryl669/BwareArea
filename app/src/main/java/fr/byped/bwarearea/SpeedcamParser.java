@@ -68,7 +68,7 @@ public class SpeedcamParser
             {
                 String line = lines[i];
                 // Ignore invalid lines
-                if (!line.substring(0, 1).matches("[0-9\\.]")) continue;
+                if (!line.substring(0, 1).matches("[-0-9\\.]")) continue;
                 // We need to replace any error in the file (typically, double comma, etc...)
                 line = line.replaceAll(",,", ",").replaceAll(" ", "");
                 // Then split in terms
@@ -110,7 +110,7 @@ public class SpeedcamParser
             {
                 line = lines[i];
                 // Ignore invalid lines
-                if (!line.substring(0, 1).matches("[0-9\\.]")) continue;
+                if (!line.substring(0, 1).matches("[-0-9\\.]")) continue;
                 // We need to replace any error in the file (typically, double comma, etc...)
                 line = line.replaceAll(",,", ",").replaceAll(" ", "");
                 // Then split in terms
