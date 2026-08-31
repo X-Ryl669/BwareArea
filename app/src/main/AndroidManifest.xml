@@ -3,6 +3,7 @@
     android:installLocation="auto"
     package="fr.byped.bwarearea">
 
+    <!-- Permissions for background services -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -11,10 +12,13 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <!-- Required for Android 14+ (API 34+) -->
+    
+    <!-- Required for Android 14+ (API 34+) for foreground services that use location -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <!-- Required to prevent battery optimization on Android 6 and later -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
-    <uses-feature android:name="android.hardware.location.gps" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -23,24 +27,30 @@
         android:roundIcon="@mipmap/ic_launcher_bware_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".MainActivity" android:icon="@drawable/ic_bware">
+        
+        <activity 
+            android:name=".MainActivity" 
+            android:icon="@drawable/ic_bware"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <receiver android:name=".BluetoothDeviceConnected">
+        <receiver 
+            android:name=".BluetoothDeviceConnected"
+            android:enabled="true"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
                 <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" />
             </intent-filter>
         </receiver>
 
+        <!-- Service principale per il floating widget -->
         <service
             android:name=".FloatingWarnerService"
-            android:name=".OverlayLocationService"
             android:foregroundServiceType="location"
             android:enabled="true"
             android:exported="false"
@@ -49,7 +59,8 @@
         <activity
             android:name=".WhyPermissionActivity"
             android:icon="@drawable/ic_bware"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"
+            android:excludeFromRecents="true" />
     </application>
 
 </manifest>
