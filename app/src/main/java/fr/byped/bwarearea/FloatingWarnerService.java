@@ -2,6 +2,8 @@ package fr.byped.bwarearea;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -50,7 +52,11 @@ public class FloatingWarnerService extends Service {
     private FileWriter logToFile;
     private boolean trackOpened;
 
+    private static boolean serviceRunning = false;
 
+    public static boolean isRunning() {
+        return serviceRunning;
+    }
 
     @Nullable
     @Override
@@ -61,22 +67,38 @@ public class FloatingWarnerService extends Service {
 
     private void showLocationNotification()
     {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    "main",
+                    "BwareArea Service",
+                    NotificationManager.IMPORTANCE_LOW);
+            channel.setShowBadge(false);
+            NotificationManager nm = getSystemService(NotificationManager.class);
+            if (nm != null) {
+                nm.createNotificationChannel(channel);
+            }
+        }
+
         Intent intent = new Intent("finish_service");
         intent.setClass(this, FloatingWarnerService.class);
-        // You can also include some extra data.
         intent.putExtra("message", "From service!");
+
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags |= PendingIntent.FLAG_IMMUTABLE;
+        }
+
+        // DO NOT use mipmap/launcher as a small icon -> causes crashes on many devices
         Notification notification = new NotificationCompat.Builder(this, "main")
                 .setContentTitle(getString(R.string.bware_is_running))
                 .setContentText(getString(R.string.tap_to_settings))
-                .setSmallIcon(R.mipmap.ic_launcher_bware)
-                .setContentIntent(PendingIntent.getService(this, 0, intent, 0))
+                .setSmallIcon(android.R.drawable.ic_menu_mylocation)
+                .setContentIntent(PendingIntent.getService(this, 0, intent, flags))
                 .setOngoing(true)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .build();
 
-
-
         startForeground(1, notification);
-
     }
 
     @Override
@@ -104,7 +126,12 @@ public class FloatingWarnerService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        serviceRunning = true;
         binder = new Binder();
+
+        // Required: startForeground must be called within a few seconds of startForegroundService
+        // Otherwise, Android kills the service (and the GPS seems to "disconnect")
+        showLocationNotification();
 
         // Check if we have some action to perform first
         collection = new POICollection(this);
@@ -148,13 +175,12 @@ public class FloatingWarnerService extends Service {
             class GestureListener extends GestureDetector.SimpleOnGestureListener {
                 @Override
                 public boolean onDoubleTap(final MotionEvent e) {
-                    // Should trigger our main activity and stop the service
+                    // Open MainActivity without stopping the service / overlay
                     Intent intent = new Intent(FloatingWarnerService.this, MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                            | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                            | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
-
-                    //close the service and remove the fab view
-                    stopCleanly();
                     return true;
                 }
             }
@@ -234,6 +260,7 @@ public class FloatingWarnerService extends Service {
 
     @Override
     public void onDestroy() {
+        serviceRunning = false;
         stopLocation();
         super.onDestroy();
         if (mOverlayView != null)

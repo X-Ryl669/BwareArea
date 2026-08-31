@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -101,7 +102,11 @@ public class WhyPermissionActivity extends AppCompatActivity {
                             }
                         }
                         lastPosition = position;
-                        if (position == 5) finish();
+                        if (position == 5) {
+                            SharedPreferences prefs = getSharedPreferences("permissions_state", MODE_PRIVATE);
+                            prefs.edit().putBoolean("wizard_done", true).apply();
+                            finish();
+                        }
                     }
 
                     @Override

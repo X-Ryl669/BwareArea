@@ -11,10 +11,12 @@ import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.PowerManager;
@@ -23,6 +25,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -90,22 +93,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         pref = getSharedPreferences("settings", Context.MODE_PRIVATE);
         initCrashReporter();
-        Toolbar toolbar = (Toolbar) findViewById(R.id.appbar);
-        setSupportActionBar(toolbar);
+
         setContentView(R.layout.activity_main);
 
+        // R.id.appbar is AppBarLayout; the actual toolbar is R.id.toolbar
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+        }
 
-
-        // Check if we have all required permissions (if not, start the WhyPermissionActivity)
-        boolean canUseGPS = Build.VERSION.SDK_INT < 23 || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-        boolean canAccessExternalStorage = Build.VERSION.SDK_INT < 23 || (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
-        boolean canOverlay = Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(MainActivity.this);
-        boolean canSkipDoze = Build.VERSION.SDK_INT < Build.VERSION_CODES.M || ((PowerManager)getSystemService(Context.POWER_SERVICE)).isIgnoringBatteryOptimizations(getPackageName());
-        if (!canUseGPS || !canAccessExternalStorage || !canOverlay || !canSkipDoze)
-        {
-            // Need to start the WhyPermissionActivity
-            Intent intent = new Intent(this, WhyPermissionActivity.class);
-            startActivity(intent);
+        // If the service is already running, do not run the permissions wizard again.
+        if (!FloatingWarnerService.isRunning() && !hasAllPermissions()) {
+            startActivity(new Intent(this, WhyPermissionActivity.class));
         }
 
 
@@ -237,7 +236,13 @@ public class MainActivity extends AppCompatActivity {
         startService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startService();
+                if (FloatingWarnerService.isRunning()) {
+                    stopService(new Intent(MainActivity.this, FloatingWarnerService.class));
+                    startService.setText(R.string.start_service);
+                } else {
+                    startService();
+                    startService.setText(R.string.stop_service);
+                }
             }
         });
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, new IntentFilter("finish_activity"));
@@ -314,12 +319,41 @@ public class MainActivity extends AppCompatActivity {
     /** Start the main service and finish this activity */
     private void startService()
     {
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        boolean gpsEnabled = lm != null && lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (!gpsEnabled) {
+            new AlertDialog.Builder(this)
+                    .setTitle("GPS Off")
+                    .setMessage("GPS must be enabled to use BwareArea.\nDo you want to enable it now?")
+                    .setPositiveButton("Active", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            return;
+        }
         ContextCompat.startForegroundService(this, new Intent(MainActivity.this, FloatingWarnerService.class));
         Toast.makeText(getApplicationContext(), R.string.started_service, Toast.LENGTH_LONG).show();
-//        MainActivity.this.finish();
     }
 
 
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (startService == null || POIDBLabel == null) return;
+        if (FloatingWarnerService.isRunning()) {
+            startService.setText(R.string.stop_service);
+            long count = pref.getLong("poiCount", 0);
+            POIDBLabel.setText(String.format(getString(R.string.point_of_interest_database_with_poi), (int) count));
+        } else {
+            startService.setText(R.string.start_service);
+        }
+    }
 
     @Override
     @TargetApi(23)
@@ -386,6 +420,20 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
+    private boolean hasAllPermissions() {
+        boolean canUseGPS = Build.VERSION.SDK_INT < 23
+                || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        boolean canAccessExternalStorage = Build.VERSION.SDK_INT < 23
+                || (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                    && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+        boolean canOverlay = Build.VERSION.SDK_INT < Build.VERSION_CODES.M
+                || Settings.canDrawOverlays(this);
+        boolean canSkipDoze = Build.VERSION.SDK_INT < Build.VERSION_CODES.M
+                || ((PowerManager) getSystemService(Context.POWER_SERVICE)).isIgnoringBatteryOptimizations(getPackageName());
+        return canUseGPS && canAccessExternalStorage && canOverlay && canSkipDoze;
+    }
+
     private void errorToast() {
         Toast.makeText(this, "Draw over other app permission not available. Can't start the application without the permission.", Toast.LENGTH_LONG).show();
     }
@@ -418,8 +466,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             progressBar.setVisibility(View.GONE);
-            POIDBLabel.setText(result);
-
+            long count = pref.getLong("poiCount", 0);
+            POIDBLabel.setText(String.format(getString(R.string.point_of_interest_database_with_poi), (int) count));
         }
         @Override
         protected void onPreExecute() {
@@ -473,8 +521,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             progressBar.setVisibility(View.GONE);
-            POIDBLabel.setText(result);
-
+            long count = pref.getLong("poiCount", 0);
+            POIDBLabel.setText(String.format(getString(R.string.point_of_interest_database_with_poi), (int) count));
         }
         @Override
         protected void onPreExecute() {
