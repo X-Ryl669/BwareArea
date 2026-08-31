@@ -88,7 +88,7 @@ public class FloatingWarnerService extends Service {
             flags |= PendingIntent.FLAG_IMMUTABLE;
         }
 
-        // NON usare mipmap/launcher come small icon -> crash su molti device
+        // DO NOT use mipmap/launcher as a small icon -> causes crashes on many devices
         Notification notification = new NotificationCompat.Builder(this, "main")
                 .setContentTitle(getString(R.string.bware_is_running))
                 .setContentText(getString(R.string.tap_to_settings))
@@ -129,8 +129,8 @@ public class FloatingWarnerService extends Service {
         serviceRunning = true;
         binder = new Binder();
 
-        // Obbligatorio: startForeground entro pochi secondi da startForegroundService
-        // altrimenti Android uccide il service (e il GPS sembra "sganciarsi")
+        // Required: startForeground must be called within a few seconds of startForegroundService
+        // Otherwise, Android kills the service (and the GPS seems to "disconnect")
         showLocationNotification();
 
         // Check if we have some action to perform first
@@ -175,7 +175,7 @@ public class FloatingWarnerService extends Service {
             class GestureListener extends GestureDetector.SimpleOnGestureListener {
                 @Override
                 public boolean onDoubleTap(final MotionEvent e) {
-                    // Apri MainActivity senza fermare il service / overlay
+                    // Open MainActivity without stopping the service / overlay
                     Intent intent = new Intent(FloatingWarnerService.this, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                             | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT

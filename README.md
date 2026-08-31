@@ -1,22 +1,3 @@
-# Mod by MoonDragon
-
-Fixes:
-
-1) Wizard permissions at every startup
-2) POI count not updated after import
-3) Crash if GPS off
-4) GPS that "drops" (startForeground too late + invalid notification)
-5) Overlay/double-tap that reopens the welcome and stops the service
-6) + crash ClassCastException toolbar + crash notification icon
-  
-How to apply:
-
-Download the sources and run the patch with python
-
-python3 Patch-FIX-2026.py
-
-Now recompile and enjoy the app to the fullest
-
 # BwareArea
 
 This is a Point Of Interest (POI) tracking application that works offline and can be used to display a warning when approaching any.

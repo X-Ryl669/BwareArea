@@ -96,13 +96,13 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        // R.id.appbar e' AppBarLayout, il Toolbar vero e' R.id.toolbar
+        // R.id.appbar is AppBarLayout; the actual toolbar is R.id.toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         if (toolbar != null) {
             setSupportActionBar(toolbar);
         }
 
-        // Se il service e' gia' attivo non rifare il wizard permessi
+        // If the service is already running, do not run the permissions wizard again.
         if (!FloatingWarnerService.isRunning() && !hasAllPermissions()) {
             startActivity(new Intent(this, WhyPermissionActivity.class));
         }
@@ -323,15 +323,15 @@ public class MainActivity extends AppCompatActivity {
         boolean gpsEnabled = lm != null && lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (!gpsEnabled) {
             new AlertDialog.Builder(this)
-                    .setTitle("GPS disattivato")
-                    .setMessage("Il GPS deve essere attivo per usare BwareArea.\nVuoi attivarlo ora?")
-                    .setPositiveButton("Attiva", new DialogInterface.OnClickListener() {
+                    .setTitle("GPS Off")
+                    .setMessage("GPS must be enabled to use BwareArea.\nDo you want to enable it now?")
+                    .setPositiveButton("Active", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                         }
                     })
-                    .setNegativeButton("Annulla", null)
+                    .setNegativeButton("Cancel", null)
                     .show();
             return;
         }
