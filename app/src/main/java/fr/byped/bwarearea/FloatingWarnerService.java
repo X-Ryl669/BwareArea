@@ -64,10 +64,9 @@ public class FloatingWarnerService extends Service {
         return binder;
     }
 
-    /**
-     * Create the notification channel required by Android 8.0+ (Oreo)
-     * and displays the notification required for the foreground service.
-     */
+    // Create the notification channel required by Android 8.0+ (Oreo)
+    // and displays the notification required for the foreground service.
+
     private void showLocationNotification() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(

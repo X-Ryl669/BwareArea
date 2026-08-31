@@ -1,4 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:android="http://schemas.android.com/apk/res/android">
-    <color android:name="ic_bware_background">#00000000</color>
-</resources>
+<color xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#00000000" />

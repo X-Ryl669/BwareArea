@@ -74,7 +74,7 @@ public class SpeedcamParser
                 // Then split in terms
                 String items[] = line.split(",");
                 if (items.length < 6) throw new Exception("The line " + i + " is not valid: " + line);
-                boolean hasDirection = items[4] != "0";
+                boolean hasDirection = !"0".equals(items[4]);
                 double direction = hasDirection ? Double.parseDouble(items[5]) : -1;
                 POIInfo poi = new POIInfo(Double.parseDouble(items[0]), Double.parseDouble(items[1]), Integer.parseInt(items[2]), Integer.parseInt(items[3]), (int)direction);
                 this.collection.createRecord(poi);
@@ -116,7 +116,7 @@ public class SpeedcamParser
                 // Then split in terms
                 String items[] = line.split(",");
                 if (items.length < 6) throw new Exception("The line " + i + " is not valid: " + line);
-                boolean hasDirection = items[4] != "0";
+                boolean hasDirection = !"0".equals(items[4]);
                 double direction = hasDirection ? Double.parseDouble(items[5]) : -1;
                 POIInfo poi = new POIInfo(Double.parseDouble(items[0]), Double.parseDouble(items[1]), Integer.parseInt(items[2]), Integer.parseInt(items[3]), (int)direction);
                 this.collection.createRecord(poi);
