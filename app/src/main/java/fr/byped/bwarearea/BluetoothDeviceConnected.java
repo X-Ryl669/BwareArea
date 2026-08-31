@@ -5,7 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Bundle;
+import android.os.Build;
+import android.support.v4.content.ContextCompat;
 
 public class BluetoothDeviceConnected extends BroadcastReceiver {
     @Override
@@ -15,19 +16,17 @@ public class BluetoothDeviceConnected extends BroadcastReceiver {
         String devName = pref.getString("btTrigger", "");
         if (devName.isEmpty()) return;
 
-        // Seems so, so check if the given device should be started
         String action = intent.getAction();
-        BluetoothDevice device = (BluetoothDevice)intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+        BluetoothDevice device = (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+        if (device == null || device.getName() == null) return;  // fix: NPE protection
         if (!device.getName().equals(devName)) return;
 
         // Ok, it's the right device, so let's start/stop the service now
-        if (action.equals(BluetoothDevice.ACTION_ACL_CONNECTED))
-        {
-            // Start service now
-            context.startService(new Intent(context, FloatingWarnerService.class));
-        }
-        else if (action.equals(BluetoothDevice.ACTION_ACL_DISCONNECTED))
-        {
+        if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+            // Android 8+: must use startForegroundService from background
+            Intent serviceIntent = new Intent(context, FloatingWarnerService.class);
+            ContextCompat.startForegroundService(context, serviceIntent);
+        } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
             // Stop service
             context.stopService(new Intent(context, FloatingWarnerService.class));
         }
