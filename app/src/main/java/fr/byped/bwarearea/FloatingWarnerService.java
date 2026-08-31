@@ -435,7 +435,7 @@ public class FloatingWarnerService extends Service {
                 }
             }
 
-            widgetContainer.setClosestPOI(poi, loc, loc.getSpeed() * 3.6f, dist);
+            widgetContainer.setClosestPOI(poi, loc, location.getSpeed() * 3.6f, dist);
         }
 
         @Override
