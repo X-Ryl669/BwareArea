@@ -6,7 +6,7 @@ repositories {
 
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 29
 
 
     defaultConfig {
@@ -14,7 +14,7 @@ android {
         minSdkVersion 19
         targetSdkVersion 29
         versionCode 4
-        versionName "0.6.7"
+        versionName "0.6.8"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary true
     }
