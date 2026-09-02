@@ -41,8 +41,6 @@ import com.singhajit.sherlock.core.Sherlock;
 import com.singhajit.sherlock.core.investigation.Crash;
 import com.singhajit.sherlock.crashes.activity.CrashListActivity;
 
-import org.w3c.dom.Text;
-
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
